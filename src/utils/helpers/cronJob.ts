@@ -6,11 +6,12 @@ import { SelectedQuestion } from '../../database/entities/SelectedQuestion';
 import { Question } from '../../database/entities/Questions';
 import { In, Not } from 'typeorm';
 import redisClient from '../../database/cache/connect';
+import moment from 'moment-timezone';
 
 
 const assignQuestionToUserRegion = async () => {
-    const dbConnection = await AppDataSource.initialize();
-    const queryRunner = dbConnection.createQueryRunner();
+    // const dbConnection = await AppDataSource.initialize();
+    const queryRunner = AppDataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
@@ -30,7 +31,7 @@ const assignQuestionToUserRegion = async () => {
             if (question) {
                 const selcted = await selectedQuestionRepository.save({ question: question.id, userRegion: region.id });
                 const cacheDuration = config.QUESTION_DURATION_IN_DAYS * 24 * 60 * 60;
-                await redisClient.setEx(`region-question:${region.id}`, cacheDuration, JSON.stringify(question)); 
+                await redisClient.setEx(`region-question:${region.id}`, cacheDuration, JSON.stringify(question));
                 return selcted;
 
             }
@@ -46,36 +47,39 @@ const assignQuestionToUserRegion = async () => {
     }
 
 }
+const calculateCronPattern = (cycleDays: number): string => {
+    const nextRunDate = moment().add(cycleDays, 'days').tz('Asia/Singapore').set({ hour: 19, minute: 0, second: 0 });
+    return `${nextRunDate.minute()} ${nextRunDate.hour()} ${nextRunDate.date()} ${nextRunDate.month() + 1} *`;
+};
 
 export const initializeCronJob = async () => {
-    console.log("initializing cron job");
     const connection = {
         host: config.REDIS_HOST,
         port: Number(config.REDIS_PORT),
     };
 
-
-    const myQueue = new Queue('my-question-cron-test', { connection });
-    ;
-    const selectedQuestions = await assignQuestionToUserRegion();
+    const myQueue = new Queue('my-question-cron', { connection });
 
     // Upserting a repeatable job in the queue
     await myQueue.upsertJobScheduler(
-        'bonfire-question-scheduler-test',
+        'bonfire-question-scheduler',
         {
-            every: config.QUESTION_DURATION_IN_DAYS * 24 * 60 * 60 * 1000,
+            // every: config.QUESTION_DURATION_IN_DAYS * 24 * 60 * 60 * 1000,
+            pattern: calculateCronPattern(config.QUESTION_DURATION_IN_DAYS),
         },
         {
-            name: 'every-job-test',
+            name: 'every-job',
             data: { jobData: "selectedQuestions" },
-            opts: {}, // Optional additional job options
+            opts: {
+            }
         },
     );
 
     // Worker to process the jobs
     const worker = new Worker(
-        'my-question-cron-test',
+        'my-question-cron',
         async job => {
+            const selectedQuestions = await assignQuestionToUserRegion();
             console.log(`Processing job ${job.id} with data: ${job.data.jobData}`);
         },
         { connection },

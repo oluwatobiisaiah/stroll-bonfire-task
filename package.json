@@ -10,7 +10,7 @@
     "start": "ts-node src/server.ts",
     "ts:run": "ts-node -r dotenv/config -r tsconfig-paths/register --transpile-only",
     "typeorm": "tsx -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/database/data-source.ts",
-    "job-scheduler":"yarn run ts-node src/utils/helpers/cronJob"
+    "job-scheduler": "yarn run ts-node src/utils/helpers/cronJob"
   },
   "dependencies": {
     "body-parser": "^1.20.3",
@@ -19,6 +19,7 @@
     "express": "^4.21.1",
     "express-rate-limit": "^7.4.1",
     "helmet": "^8.0.0",
+    "moment-timezone": "^0.5.46",
     "mysql2": "^3.11.3",
     "redis": "^4.7.0",
     "ts-node": "^10.9.2",
