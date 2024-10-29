@@ -1,0 +1,37 @@
+{
+  "name": "stroll-bonfire-task-one",
+  "version": "1.0.0",
+  "description": "task one for the backend engineer role ",
+  "main": "server.ts",
+  "author": "Oluwatobi Adedeji",
+  "license": "ISC",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only --exit-child ./src/server.ts",
+    "start": "ts-node src/server.ts",
+    "ts:run": "ts-node -r dotenv/config -r tsconfig-paths/register --transpile-only",
+    "typeorm": "tsx -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/database/data-source.ts",
+    "job-scheduler":"yarn run ts-node src/utils/helpers/cronJob"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "bullmq": "^5.21.2",
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "express-rate-limit": "^7.4.1",
+    "helmet": "^8.0.0",
+    "mysql2": "^3.11.3",
+    "redis": "^4.7.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.19.2",
+    "typeorm": "^0.3.20",
+    "xss-clean": "^0.1.4"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.8.1",
+    "ts-node-dev": "^2.0.0",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.6.3"
+  }
+}
